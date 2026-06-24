@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>きんぎょの体温 - Visual Novel</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --box-bg: rgba(255, 255, 255, 0.9);
+            --text-color: #333;
+            --accent-color: #d14d32; /* 金魚の色 */
+            --hikari-color: #4a6fa5;
+            --hikaru-color: #e6b422;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        /* ゲーム画面全体のコンテナ */
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 100%;
+            margin: 0 auto;
+            background-color: var(--bg-color);
+            background-image: linear-gradient(to bottom, #a1c4fd 0%, #c2e9fb 100%); /* 仮の背景色 */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            border-left: 1px solid #ccc;
+            border-right: 1px solid #ccc;
+        }
+
+        /* 背景画像表示エリア */
+        #background-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        /* キャラクター立ち絵エリア */
+        #character-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .character-sprite {
+            width: 30%;
+            height: 70%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        .character-sprite.active {
+            opacity: 1;
+        }
+
+        /* メッセージボックス */
+        #message-box {
+            position: relative;
+            z-index: 10;
+            background: var(--box-bg);
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 120px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+
+        #name-label {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: var(--accent-color);
+        }
+
+        #text-content {
+            font-size: 1.05em;
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        /* 選択肢 */
+        #choice-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 80%;
+            display: none;
+        }
+
+        .choice-button {
+            background: var(--box-bg);
+            padding: 15px;
+            border: 2px solid var(--accent-color);
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .choice-button:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* スタート画面 */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        h1 { color: var(--accent-color); margin-bottom: 5px; }
+        .subtitle { font-size: 0.9em; color: #666; margin-bottom: 30px; }
+
+        #start-button {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+
+        /* ログなどのUI */
+        #ui-layer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 30;
+        }
+        
+        /* 簡易的なフェード演出 */
+        .fade-in { animation: fadeIn 0.5s forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen">
+        <h1>きんぎょの体温</h1>
+<p class="subtitle">
+大事なものが増えるたび、少しだけ賑やかになる。
+これは、金魚がやって来てからの、とある一日の話。
+</p>
+        <button id="start-button">物語をはじめる</button>
+    </div>
+
+    <div id="background-layer"></div>
+    <div id="character-layer">
+        <div id="sprite-hikari" class="character-sprite"></div>
+        <div id="sprite-hikaru" class="character-sprite"></div>
+    </div>
+
+    <div id="choice-container"></div>
+
+    <div id="message-box">
+        <div id="name-label"></div>
+        <div id="text-content"></div>
+    </div>
+</div>
+
+<script>
+/**
+ * ゲームデータとシナリオ
+ */
+const scenario = [
+    { name: "", text: "昼下がりの陽光が、天井を淡い橙色で満たしている。", bg: "room_day" },
+    { name: "", text: "佳紀は床の上に膝立ちし、木台の上の金魚鉢を目の高さで覗き込んでいた。" },
+    { name: "", text: "透明な水の中では、赤い琉金と黒い出目金が、ひらひらと尾びれを揺らしている。" },
+    { name: "", text: "いつの間にか水草や小さな土管まで増えて、すっかり部屋の一部になっていた。" },
+    { name: "光", text: "お前、ほんまに生き物好きよなぁ。", char: "hikari" },
+    { name: "佳紀", text: "まあ、好きやな。光は、金魚もあんま好きやないん。" },
+    { name: "光", text: "だってなつかんもん。魚なんか、何考えてるか分からんやん。", char: "hikari" },
+    { name: "佳紀", text: "そうでもないで。毎日餌やってたら、人が来ただけで寄ってくるようになるんよ。ほら。" },
+    { name: "", text: "水面へ餌を落とすと、二匹がぱくぱくと口を動かしながら寄ってくる。" },
+    { name: "光", text: "……ふーん。", char: "hikari" },
+    { name: "光", text: "おれもやらしてや。", char: "hikari" },
+    { name: "佳紀", text: "えー……もう餌やってまったから。あんまやり過ぎたら水汚れる。" },
+    { name: "ヒカル", text: "よしき。おれもやる。", char: "hikaru" },
+    { name: "佳紀", text: "なんや、今日は人気やな。" },
+    { name: "", text: "金魚たちは、水面で口をぱくぱくさせている。" },
+    { name: "佳紀", text: "……どうしよう。" },
+
+// 選択肢1：餌やり
+{
+    type: "choice",
+    choices: [
+        { text: "光に餌やりを任せる", target: "feed_hikari", points: { hikari: 1 } },
+        { text: "ヒカルに餌やりを任せる", target: "feed_hikaru", points: { hikaru: 1 } },
+        { text: "もう餌はやらない", target: "feed_none", points: { trio: 1 } }
+    ]
+},
+
+{ label: "feed_hikari", name: "光", text: "よっしゃ、任せろ。", char: "hikari" },
+{ name: "佳紀", text: "ほんのちょっとだけやで？ 指の先でつまむくらい。", char: "" },
+{ name: "光", text: "分かっとるに。", char: "hikari" },
+{ name: "佳紀", text: "……。", char: "" },
+{ name: "光", text: "……あのさあ、なんですぐ怒るん。", char: "hikari" },
+{ name: "佳紀", text: "怒っとらんから。俺がアホやっただけやから。", char: "" },
+{ name: "光", text: "ごめんて。", char: "hikari", next: "after_feeding" },
+
+{ label: "feed_hikaru", name: "ヒカル", text: "よしき、大好きや！", char: "hikaru" },
+{ name: "佳紀", text: "……っ、ええから……ドバッと入れたらあかんで。", char: "" },
+{ name: "ヒカル", text: "分かっとるって。", char: "hikaru" },
+{ name: "佳紀", text: "あ、上手。", char: "" },
+{ name: "ヒカル", text: "せやろ？ 光、この金魚さん見てみ。よしきに似とるよなー！", char: "hikaru" },
+{ name: "光", text: "1ミリも似とらんやろ。", char: "hikari" },
+{ name: "佳紀", text: "金魚鉢の前で喧嘩せんで。……でもヒカル、ありがとな。上手にやれたな。", char: "" },
+{ name: "ヒカル", text: "うん！ なぁよしき、これ明日の朝は、もっと美味しいやつあげてもええ？", char: "hikaru" },
+{ name: "佳紀", text: "え？ 美味しいやつって何……？", char: "", next: "after_feeding" },
+
+{ label: "feed_none", name: "佳紀", text: "いや……やっぱり、もうやめとかんと。これ以上あげたらあかん。", char: "" },
+{ name: "光", text: "……けち。", char: "hikari" },
+{ name: "ヒカル", text: "……けち。", char: "hikaru" },
+{ name: "佳紀", text: "はは、ハモっとる。金魚の健康のためなんやから、しゃあないやろ。", char: "", next: "after_feeding" },
+
+
+{ label: "after_feeding", name: "", text: "しばらく三人で、金魚たちがゆらゆらと泳ぐのを眺めていた。" },
+{ name: "佳紀", text: "……元気そうやな。" },
+{ name: "", text: "ふと、光のスマホ画面が目に入る" },
+{ name: "佳紀", text: "……何見とるん" },
+{ name: "光", text: "別に。", char: "hikari" },
+{ name: "", text: "光はさっと画面を伏せた。" },
+{ name: "佳紀", text: "『金魚　餌　やりすぎ』？。" },
+{ name: "光", text: "よしきのスケベ。", char: "hikari" },
+{ name: "佳紀", text: "ちゃ、ちゃうわ。たまたま見えて…。" },
+{ name: "光", text: "……死んだら後味悪いやん。", char: "hikari" },
+{ name: "佳紀", text: "うん……。" },
+{ name: "ヒカル", text: "光、金魚さん大好きなん？", char: "hikaru" },
+{ name: "光", text: "どっから出てくるん。", char: "hikari" },
+{ name: "ヒカル", text: "おれも調べとくわ。『よしき　大事にする　やり方』。", char: "hikaru" },
+{ name: "光", text: "検索出てきたら怖いやろ。", char: "hikari", next: "naming_start" },
+
+
+
+{ name: "", text: "昼食後、ふと思いついたようにヒカルが言った。" },
+{ name: "ヒカル", text: "……なあ。" , char: "hikaru"},
+{ name: "佳紀", text: "ん？" },
+{ name: "ヒカル", text: "この子ら、なんて呼んだらええん。", char: "hikaru" },
+{ name: "佳紀", text: "……あ。" },
+{ name: "光", text: "そういや、まだ名前決めとらんかったな。", char: "hikari" },
+{ name: "佳紀", text: "名前かぁ……。" },
+
+
+{
+    type: "choice",
+    choices: [
+        { text: "出目金を『デメ』、琉金を『ダルマ』にする", target: "name_deme", points: { hikari: 1 } },
+        { text: "出目金を『ギョロ』、琉金を『タイショウ』にする", target: "name_gyoro", points: { hikaru: 1 } },
+        { text: "もう少し考える", target: "name_think", points: { trio: 1 } }
+    ]
+},
+
+{ label: "name_deme", name: "光", text: "こっちの出目金はデメ。こっちのは赤と白やからダルマ。", char: "hikari" },
+{ name: "佳紀", text: "……そのまんまやな。" },
+{ name: "光", text: "分かりやすいやん。" },
+{ name: "ヒカル", text: "デメ……ダルマ……。" , char: "hikaru"},
+{ name: "ヒカル", text: "かわいい名前やな！", char: "hikaru", next: "after_naming" },
+
+
+{ label: "name_gyoro", name: "佳紀", text: "ギョロ…と…タイショウ……？", char: "" },
+{ name: "光", text: "なんやその名前。", char: "hikari" },
+{ name: "ヒカル", text: "ええやん！ タイショウ！強そう！", char: "hikaru", next: "after_naming" },
+
+{ label: "name_think", name: "佳紀", text: "そんなすぐには決められやん。" },
+{ name: "ヒカル", text: "名前、大事やもんな！", char: "hikaru" },
+{ name: "光", text: "はぁ？黒とか赤でええんちゃう。", char: "hikari", next: "after_naming" },
+
+
+
+{ label: "after_naming", name: "", text: "新しい名前をもらっても、二匹は何も知らない顔で、水の中をゆらゆらと泳いでいた。" },
+{ name: "ヒカル", text: "よしき。", char: "hikaru" },
+{ name: "佳紀", text: "ん？" },
+{ name: "ヒカル", text: "金魚って、祭りにもおるんやろ。", char: "hikaru" },
+{ name: "佳紀", text: "……金魚すくいな。" },
+{ name: "光", text: "あったなぁ。", char: "hikari" },
+{ name: "ヒカル", text: "よしき、やったことある？", char: "hikaru" },
+{ name: "佳紀", text: "……ない。" },
+{ name: "ヒカル", text: "なんで？", char: "hikaru" },
+{ name: "佳紀", text: "好きやないねん。" },
+{ name: "佳紀", text: "人間が楽しむためだけに、何回もすくわれたり落とされたり。" },
+{ name: "佳紀", text: "上手く飼われやんかったら死ぬやろ。" },
+{ name: "佳紀", text: "あんなん金魚にとって、地獄のプールや。" },
+{ name: "光", text: "ぶはっ！", char: "hikari" },
+{ name: "光", text: "出た！ よしきの人間嫌いっ！", char: "hikari" },
+{ name: "光", text: "お前、ほんま昔っからそういうこと言うよなぁ！", char: "hikari" },
+{ name: "佳紀", text: "事実やろ。" },
+{ name: "光", text: "ひねとる〜", char: "hikari" },
+{ name: "佳紀", text: "ほっとけ。" },
+{ name: "ヒカル", text: "ふ〜ん、やったらこいつら天国やん。よしき、大事にしてくれるし。", char: "hikaru" },
+{ name: "佳紀", text: "……そうやな。" },
+{ name: "佳紀", text: "長生きさせてやらんと。", next: "after_festival" },
+
+
+
+{ label: "after_festival", name: "", text: "夕方。" },
+{ name: "", text: "金魚鉢の中では、二匹が水草の間をゆっくり泳いでいる。" },
+{ name: "佳紀", text: "……水草、もう少し増やした方がええんかな。" },
+{ name: "光", text: "なんで？", char: "hikari" },
+{ name: "佳紀", text: "隠れる場所があった方が落ち着くらしい。" },
+{ name: "ヒカル", text: "森にするん？", char: "hikaru" },
+{ name: "光", text: "どんだけ増やす気や。", char: "hikari" },
+{ name: "ヒカル", text: "いっぱい。", char: "hikaru" },
+{ name: "光", text: "金魚見えやんやん。", char: "hikari" },
+
+
+{
+    type: "choice",
+    choices: [
+        { text: "本格的な水草を増やす", target: "plant_more", points: { fish: 1 } },
+        { text: "今のままで十分だ", target: "plant_keep", points: { trio: 1 } }
+    ]
+},
+
+{ label: "plant_more", name: "佳紀", text: "よし、今度ちゃんとした水草買ってくるか。" },
+{ name: "光", text: "……また金魚のことか。", char: "hikari" },
+{ name: "ヒカル", text: "森になるん？", char: "hikaru" },
+{ name: "佳紀", text: "森にはせんけど。" , next: "after_plants"}
+
+{ label: "plant_keep", name: "佳紀", text: "……いや、このままでも十分きれいやな。" },
+{ name: "ヒカル", text: "うん。ゆらゆらしとってええなぁ。", char: "hikaru" },
+{ name: "光", text: "増やしすぎても世話大変やろ。", char: "hikari" },
+{ name: "佳紀", text: "せやな。" , next: "after_plants"}
+
+
+{ label: "after_plants", name: "", text: "夕食後、部屋の中ですっかり寛いでいる。" },
+{ name: "佳紀", text: "……なんか見るか。" },
+{ name: "", text: "何気なくテレビをつける。" },
+{ name: "テレビ", text: "『今日のにゃんこ特集！ 甘えん坊な猫たちをたっぷりご紹介します！』" },
+{ name: "佳紀", text: "…ハァ…猫かわええなぁ。" },
+{ name: "光", text: "…………。", char: "hikari" },
+{ name: "ヒカル", text: "よしき、猫好きやもんな。", char: "hikaru" },
+{ name: "佳紀", text: "猫も犬も好きやし、他の生き物も好きや。" },
+{ name: "光", text: "…………。", char: "hikari" },
+{ name: "ヒカル", text: "……よしき、おれは？おれは？", char: "hikaru" },
+{ name: "佳紀", text: "なんですぐ対抗するん。" },
+{ name: "光", text: "おれは？。", char: "hikari" },
+{ name: "佳紀", text: "……普通" },
+{ name: "光", text: "嘘やん。めっちゃ耳赤なっとるで", char: "hikari" },
+
+{
+    type: "choice",
+    choices: [
+        { text: "光に肩を寄せる", target: "jealous_hikari", points: { hikari: 1 } },
+        { text: "ヒカルの頭を撫でる", target: "jealous_hikaru", points: { hikaru: 1 } },
+        { text: "二人まとめてあしらう", target: "jealous_both", points: { trio: 1 } }
+    ]
+
+},
+{ label: "jealous_hikari", name: "", text: "佳紀はそっと光の肩へ身体を預けた。" },
+{ name: "光", text: "……は？", char: "hikari" },
+{ name: "佳紀", text: "これでええんやろ。" },
+{ name: "光", text: "そ、そういう意味ちゃうわ……。", char: "hikari" },
+{ name: "ヒカル", text: "光、真っ赤やで。", char: "hikaru" },
+{ name: "光", text: "うっさ！", char: "hikari", next: "pre_final" },
+
+{ label: "jealous_hikaru", name: "", text: "佳紀はヒカルの頭をくしゃりと撫でた。" },
+{ name: "ヒカル", text: "……ふふん。", char: "hikaru" },
+{ name: "ヒカル", text: "おれの勝ち〜", char: "hikaru" },
+{ name: "光", text: "何に勝ったんや。", char: "hikari", next: "pre_final" },
+
+{ label: "jealous_both", name: "佳紀", text: "あー仔猫かわええなぁ。" },
+{ name: "ヒカル", text: "あかん。", char: "hikaru" },
+{ name: "光", text: "眼中にないな。", char: "hikari", next: "pre_final" },
+
+
+{ label: "pre_final", name: "", text: "そろそろ、夜も更けてきている。" },
+{ name: "", text: "金魚鉢の中で、二匹がゆったりと尾を揺らしている。" },
+{ name: "", text: "昼間は賑やかだった座敷にも、今は穏やかな静けさが満ちていた。" },
+{ name: "ヒカル", text: "……もう寝る時間やな。", char: "hikaru" },
+{ name: "光", text: "よしきは金魚ばっか見とったやん。", char: "hikari" },
+{ name: "佳紀", text: "……気になってまって。" },
+{ name: "光", text: "ま、ええんちゃう。", char: "hikari" },
+{ name: "佳紀", text: "……さて。" },
+{ name: "佳紀", text: "明日は何しようかな。" },
+
+{
+    type: "choice",
+    choices: [
+        { text: "光に明日の水換えを誘う", target: "final_hikari", points: { hikari: 5 } },
+        { text: "ヒカルともう少しだけ金魚を眺める", target: "final_hikaru", points: { hikaru: 5 } },
+        { text: "もっと大きな水槽を調べてみる", target: "final_fish", points: { fish: 5 } }
+    ]
+},
+
+{ label: "final_hikari", name: "佳紀", text: "「なあ、光。明日、水換えするんやけど、手ぇ貸してくれやん？」", next: "ending_check" },
+{ label: "final_hikaru", name: "佳紀", text: "「もうちょっとだけ見とるか。」", next: "ending_check" },
+{ label: "final_fish", name: "佳紀", text: "「もっと大きい水槽、あったりするんかな。」", next: "ending_check" },
+
+{ label: "ending_check", type: "logic" }
+];
+ 
+
+/**
+ * ゲームエンジン部分
+ */
+let currentIndex = 0;
+const state = {
+    hikari: 0,
+    hikaru: 0,
+    trio: 0,
+    fish: 0
+};
+
+const msgBox = document.getElementById('message-box');
+const nameLabel = document.getElementById('name-label');
+const textContent = document.getElementById('text-content');
+const choiceContainer = document.getElementById('choice-container');
+const bgLayer = document.getElementById('background-layer');
+const spriteHikari = document.getElementById('sprite-hikari');
+const spriteHikaru = document.getElementById('sprite-hikaru');
+const startScreen = document.getElementById('start-screen');
+const startButton = document.getElementById('start-button');
+
+startButton.addEventListener('click', () => {
+    startScreen.style.display = 'none';
+    renderStep();
+});
+
+msgBox.addEventListener('click', () => {
+    if (choiceContainer.style.display === 'flex') return;
+    
+    const current = scenario[currentIndex];
+    if (current.type === 'choice') return;
+
+    currentIndex++;
+    if (currentIndex < scenario.length) {
+        renderStep();
+    }
+});
+
+function renderStep() {
+    const current = scenario[currentIndex];
+
+    // ロジック分岐の処理
+    if (current.type === 'logic') {
+        determineEnding();
+        return;
+    }
+
+    // 選択肢の処理
+    if (current.type === 'choice') {
+        showChoices(current.choices);
+        return;
+    }
+
+    // 名前の表示
+    nameLabel.textContent = current.name || "";
+    // テキストの表示
+    textContent.textContent = current.text;
+
+    // キャラクターの表示（簡易）
+    if (current.char === 'hikari') {
+        spriteHikari.classList.add('active');
+        spriteHikaru.classList.remove('active');
+        spriteHikari.style.backgroundColor = "rgba(74, 111, 165, 0.3)"; // 仮の立ち絵色
+    } else if (current.char === 'hikaru') {
+        spriteHikaru.classList.add('active');
+        spriteHikari.classList.remove('active');
+        spriteHikaru.style.backgroundColor = "rgba(230, 180, 34, 0.3)"; // 仮の立ち絵色
+    } else if (current.char === '') {
+        spriteHikari.classList.remove('active');
+        spriteHikaru.classList.remove('active');
+    }
+
+    // 背景の変更（簡易）
+    if (current.bg) {
+        // bgLayer.style.backgroundImage = `url(${current.bg}.jpg)`; // 画像がある場合はこちら
+    }
+
+    // 自動遷移
+    if (current.next) {
+        const nextLabel = current.next;
+        // 次のラベルを探す
+        msgBox.onclick = () => {
+            currentIndex = scenario.findIndex(s => s.label === nextLabel);
+            renderStep();
+            // イベントリスナを元に戻す
+            resetMsgBoxClick();
+        };
+    }
+}
+
+function resetMsgBoxClick() {
+    msgBox.onclick = () => {
+        if (choiceContainer.style.display === 'flex') return;
+        currentIndex++;
+        renderStep();
+    };
+}
+
+function showChoices(choices) {
+    choiceContainer.innerHTML = '';
+    choiceContainer.style.display = 'flex';
+    
+    choices.forEach(c => {
+        const btn = document.createElement('div');
+        btn.className = 'choice-button';
+        btn.textContent = c.text;
+        btn.onclick = () => {
+            // ポイント加算
+            if (c.points) {
+                for (let key in c.points) {
+                    state[key] += c.points[key];
+                }
+            }
+            choiceContainer.style.display = 'none';
+            currentIndex = scenario.findIndex(s => s.label === c.target);
+            renderStep();
+        };
+        choiceContainer.appendChild(btn);
+    });
+}
+
+function determineEnding() {
+    // 優先順位：金魚沼 > 三人 > 光 = ヒカル
+    if (state.fish >= 6) {
+        showEnding("金魚沼エンド：増え続ける水槽", "数日後――。座敷には、見覚えのない巨大な水槽が鎮座していた。『この水草もええな……』『次は流木も入れたい……』目を輝かせる佳紀の後ろで、光とヒカルが並んで座っている。『……おれら、最近ほとんど話しかけられてへん』『金魚に負けた……』デメとダルマだけが、今日も悠々と泳いでいた。");
+    } else if (state.trio >= 3) {
+        showEnding("三人エンド：おれらの方も見て", "『最近、よしき金魚ばっか見とる』『見とるな』二人にじりじりと迫られて、佳紀は眉をひそめた。『……何なん』。光がにやりと笑う。『今日は、おれらでよしきの世話したる』。ヒカルも嬉しそうに頷いた。『うん！』そのまま両側から抱きつかれ、座敷は大騒ぎになる。金魚鉢の中では、デメとダルマが、何も知らない顔でゆらゆらと泳いでいた。");
+    } else if (state.hikari >= state.hikaru) {
+        showEnding("光エンド：水面越しの体温", "翌朝――。佳紀と光は、並んで金魚鉢の水を換えていた。『そっち持っとって』『分かっとる』。そんなやり取りをしながら、ふと触れた指先を、光はなかなか離さなかった。『……金魚、大事にしろよ。お前が大事にしとるもんは、おれも……それなりに、大事やと思っとるから』。朝の光の中、そう言った光の耳は、少し赤かった。");
+    } else {
+        showEnding("ヒカルエンド：一番だいじなもの", "夜更け。金魚鉢を覗き込んでいたヒカルが、ふいに佳紀を振り返った。『なあ、よしき。金魚さんは大事にされとるやろ？ ……おれも、大事にできとる？』真っ直ぐな瞳に、佳紀は少しだけ困った顔で笑う。『当たり前やろ』。そう言って頭を撫でると、ヒカルはとても嬉しそうに目を細めた。");
+    }
+
+}
+
+function showEnding(title, text) {
+    nameLabel.textContent = "【Ending】";
+    textContent.innerHTML = `<strong>${title}</strong><br><br>${text}<br><br><button onclick="location.reload()" style="padding:10px; cursor:pointer;">タイトルへ戻る</button>`;
+    msgBox.onclick = null; // クリック不可に
+    spriteHikari.classList.remove('active');
+    spriteHikaru.classList.remove('active');
+}
+
+</script>
+</body>
+</html>
