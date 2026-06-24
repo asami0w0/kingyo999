@@ -505,27 +505,22 @@ function renderStep() {
     textContent.textContent = current.text;
 
     // キャラクターの表示（簡易）
-    if (current.char === 'hikari') {
-        spriteHikari.classList.add('active');
-        spriteHikaru.classList.remove('active');
-        spriteHikari.style.backgroundColor = "rgba(74, 111, 165, 0.3)"; // 仮の立ち絵色
-    } else if (current.char === 'hikaru') {
-        spriteHikaru.classList.add('active');
-        spriteHikari.classList.remove('active');
-        spriteHikaru.style.backgroundColor = "rgba(230, 180, 34, 0.3)"; // 仮の立ち絵色
-    } else if (current.char === '') {
-        spriteHikari.classList.remove('active');
-        spriteHikaru.classList.remove('active');
-    }
+spriteHikari.classList.remove('active');
+spriteHikaru.classList.remove('active');
+
+if (current.char === 'hikari') {
+    spriteHikari.classList.add('active');
+    spriteHikari.style.backgroundColor = "rgba(74, 111, 165, 0.3)";
+} else if (current.char === 'hikaru') {
+    spriteHikaru.classList.add('active');
+    spriteHikaru.style.backgroundColor = "rgba(230, 180, 34, 0.3)";
+}
 
     // 背景の変更（簡易）
     if (current.bg) {
         // bgLayer.style.backgroundImage = `url(${current.bg}.jpg)`; // 画像がある場合はこちら
     }
-
-
-
-
+    }
 function showChoices(choices) {
     choiceContainer.innerHTML = '';
     choiceContainer.style.display = 'flex';
