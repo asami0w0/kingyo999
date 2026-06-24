@@ -280,8 +280,7 @@ const scenario = [
 { name: "光", text: "検索出てきたら怖いやろ。", char: "hikari", next: "naming_start" },
 
 
-
-{ name: "", text: "昼食後、ふと思いついたようにヒカルが言った。" },
+{ label: "naming_start", name: "", text: "昼食後、ふと思いついたようにヒカルが言った。" },
 { name: "ヒカル", text: "……なあ。" , char: "hikaru"},
 { name: "佳紀", text: "ん？" },
 { name: "ヒカル", text: "この子ら、なんて呼んだらええん。", char: "hikaru" },
@@ -363,12 +362,12 @@ const scenario = [
 { label: "plant_more", name: "佳紀", text: "よし、今度ちゃんとした水草買ってくるか。" },
 { name: "光", text: "……また金魚のことか。", char: "hikari" },
 { name: "ヒカル", text: "森になるん？", char: "hikaru" },
-{ name: "佳紀", text: "森にはせんけど。" , next: "after_plants"}
+{ name: "佳紀", text: "森にはせんけど。", next: "after_plants" },
 
 { label: "plant_keep", name: "佳紀", text: "……いや、このままでも十分きれいやな。" },
 { name: "ヒカル", text: "うん。ゆらゆらしとってええなぁ。", char: "hikaru" },
 { name: "光", text: "増やしすぎても世話大変やろ。", char: "hikari" },
-{ name: "佳紀", text: "せやな。" , next: "after_plants"}
+{ name: "佳紀", text: "せやな。", next: "after_plants" },
 
 
 { label: "after_plants", name: "", text: "夕食後、部屋の中ですっかり寛いでいる。" },
