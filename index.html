@@ -443,6 +443,8 @@ const scenario = [
  * ゲームエンジン部分
  */
 let currentIndex = 0;
+let isEnding = false; // ★追加：エンディングに達したかどうかのフラグ
+
 const state = {
     hikari: 0,
     hikaru: 0,
@@ -466,6 +468,7 @@ startButton.addEventListener('click', () => {
 });
 
 msgBox.addEventListener('click', () => {
+    if (isEnding) return; // ★追加：エンディング後はクリックを完全に無効化
     if (choiceContainer.style.display === 'flex') return;
 
     const current = scenario[currentIndex];
@@ -504,23 +507,26 @@ function renderStep() {
     // テキストの表示
     textContent.textContent = current.text;
 
-    // キャラクターの表示（簡易）
-spriteHikari.classList.remove('active');
-spriteHikaru.classList.remove('active');
+    // キャラクターの表示（修正）
+    spriteHikari.classList.remove('active');
+    spriteHikaru.classList.remove('active');
+    spriteHikari.style.backgroundColor = ""; // ★追加：前回の背景色をクリア
+    spriteHikaru.style.backgroundColor = ""; // ★追加：前回の背景色をクリア
 
-if (current.char === 'hikari') {
-    spriteHikari.classList.add('active');
-    spriteHikari.style.backgroundColor = "rgba(74, 111, 165, 0.3)";
-} else if (current.char === 'hikaru') {
-    spriteHikaru.classList.add('active');
-    spriteHikaru.style.backgroundColor = "rgba(230, 180, 34, 0.3)";
-}
+    if (current.char === 'hikari') {
+        spriteHikari.classList.add('active');
+        spriteHikari.style.backgroundColor = "rgba(74, 111, 165, 0.3)";
+    } else if (current.char === 'hikaru') {
+        spriteHikaru.classList.add('active');
+        spriteHikaru.style.backgroundColor = "rgba(230, 180, 34, 0.3)";
+    }
 
     // 背景の変更（簡易）
     if (current.bg) {
         // bgLayer.style.backgroundImage = `url(${current.bg}.jpg)`; // 画像がある場合はこちら
     }
-    }
+}
+
 function showChoices(choices) {
     choiceContainer.innerHTML = '';
     choiceContainer.style.display = 'flex';
@@ -555,17 +561,18 @@ function determineEnding() {
     } else {
         showEnding("ヒカルエンド：一番だいじなもの", "夜更け。金魚鉢を覗き込んでいたヒカルが、ふいに佳紀を振り返った。『なあ、よしき。……おれも、よしきのこと、大事にできとる？』真っ直ぐな瞳に、佳紀は少しだけ困った顔で笑う。『当たり前やん』。そう言って頭を撫でると、ヒカルはとても嬉しそうに目を細めた。");
     }
-
 }
 
 function showEnding(title, text) {
+    isEnding = true; // ★追加：エンディングフラグをONにする
     nameLabel.textContent = "【Ending】";
     textContent.innerHTML = `<strong>${title}</strong><br><br>${text}<br><br><button onclick="location.reload()" style="padding:10px; cursor:pointer;">タイトルへ戻る</button>`;
-    msgBox.onclick = null; // クリック不可に
+    
     spriteHikari.classList.remove('active');
     spriteHikaru.classList.remove('active');
+    spriteHikari.style.backgroundColor = ""; // ★追加：エンディング時も背景色をクリア
+    spriteHikaru.style.backgroundColor = ""; // ★追加：エンディング時も背景色をクリア
 }
-
 </script>
 </body>
 </html>
