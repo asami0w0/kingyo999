@@ -217,7 +217,7 @@ const scenario = [
     { name: "", text: "透明な水の中では、赤い琉金と黒い出目金が、ひらひらと尾びれを揺らしている。" },
     { name: "", text: "いつの間にか水草や小さな土管まで増えて、すっかり部屋の一部になっていた。" },
     { name: "光", text: "お前、ほんまに生き物好きよなぁ。", char: "hikari" },
-    { name: "佳紀", text: "まあ、好きやな。光は、金魚もあんま好きやないん。" },
+    { name: "佳紀", text: "光は、金魚もあんま好きやないん。" },
     { name: "光", text: "だってなつかんもん。魚なんか、何考えてるか分からんやん。", char: "hikari" },
     { name: "佳紀", text: "そうでもないで。毎日餌やってたら、人が来ただけで寄ってくるようになるんよ。ほら。" },
     { name: "", text: "水面へ餌を落とすと、二匹がぱくぱくと口を動かしながら寄ってくる。" },
@@ -242,9 +242,10 @@ const scenario = [
 { label: "feed_hikari", name: "光", text: "よっしゃ、任せろ。", char: "hikari" },
 { name: "佳紀", text: "ほんのちょっとだけやで？ 指の先でつまむくらい。", char: "" },
 { name: "光", text: "分かっとるに。", char: "hikari" },
-{ name: "佳紀", text: "……。", char: "" },
-{ name: "光", text: "……あのさあ、なんですぐ怒るん。", char: "hikari" },
-{ name: "佳紀", text: "怒っとらんから。俺がアホやっただけやから。", char: "" },
+   { name: "", text: "豪快にまかれた餌が広がり、金魚が右往左往している" },
+{ name: "佳紀", text: "あっ！！またそんな…っ！", char: "" },
+{ name: "光", text: "──あのさあ、なんですぐ怒るん。", char: "hikari" },
+{ name: "佳紀", text: "怒っとらんから。光を信じた俺がアホやっただけやから。", char: "" },
 { name: "光", text: "ごめんて。", char: "hikari", next: "after_feeding" },
 
 { label: "feed_hikaru", name: "ヒカル", text: "よしき、大好きや！", char: "hikaru" },
@@ -370,7 +371,7 @@ const scenario = [
 { name: "佳紀", text: "せやな。", next: "after_plants" },
 
 
-{ label: "after_plants", name: "", text: "夕食後、部屋の中ですっかり寛いでいる。" },
+{ label: "after_plants", name: "", text: "夕食後、部屋の中はすっかり寛いだ雰囲気に満ちている。" },
 { name: "佳紀", text: "……なんか見るか。" },
 { name: "", text: "何気なくテレビをつける。" },
 { name: "テレビ", text: "『今日のにゃんこ特集！ 甘えん坊な猫たちをたっぷりご紹介します！』" },
@@ -396,18 +397,18 @@ const scenario = [
 },
 { label: "jealous_hikari", name: "", text: "佳紀はそっと光の肩へ身体を預けた。" },
 { name: "光", text: "……は？", char: "hikari" },
-{ name: "佳紀", text: "これでええんやろ。" },
-{ name: "光", text: "そ、そういう意味ちゃうわ……。", char: "hikari" },
+{ name: "佳紀", text: "これで伝わるん？" },
+{ name: "光", text: "──……", char: "hikari" },
 { name: "ヒカル", text: "光、真っ赤やで。", char: "hikaru" },
 { name: "光", text: "うっさ！", char: "hikari", next: "pre_final" },
 
 { label: "jealous_hikaru", name: "", text: "佳紀はヒカルの頭をくしゃりと撫でた。" },
-{ name: "ヒカル", text: "……ふふん。", char: "hikaru" },
-{ name: "ヒカル", text: "おれの勝ち〜", char: "hikaru" },
+{ name: "ヒカル", text: "ふふん。", char: "hikaru" },
+{ name: "ヒカル", text: "おれの勝ち〜♪", char: "hikaru" },
 { name: "光", text: "何に勝ったんや。", char: "hikari", next: "pre_final" },
 
 { label: "jealous_both", name: "佳紀", text: "あー仔猫かわええなぁ。" },
-{ name: "ヒカル", text: "あかん。", char: "hikaru" },
+{ name: "ヒカル", text: "あかん。これ。", char: "hikaru" },
 { name: "光", text: "眼中にないな。", char: "hikari", next: "pre_final" },
 
 
@@ -416,7 +417,7 @@ const scenario = [
 { name: "", text: "昼間は賑やかだった座敷にも、今は穏やかな静けさが満ちていた。" },
 { name: "ヒカル", text: "……もう寝る時間やな。", char: "hikaru" },
 { name: "光", text: "よしきは金魚ばっか見とったやん。", char: "hikari" },
-{ name: "佳紀", text: "……気になってまって。" },
+{ name: "佳紀", text: "気になってまって。" },
 { name: "光", text: "ま、ええんちゃう。", char: "hikari" },
 { name: "佳紀", text: "……さて。" },
 { name: "佳紀", text: "明日は何しようかな。" },
@@ -425,13 +426,13 @@ const scenario = [
     type: "choice",
     choices: [
         { text: "光に明日の水換えを誘う", target: "final_hikari", points: { hikari: 5 } },
-        { text: "ヒカルともう少しだけ金魚を眺める", target: "final_hikaru", points: { hikaru: 5 } },
+        { text: "ヒカルともう少し金魚を眺める", target: "final_hikaru", points: { hikaru: 5 } },
         { text: "もっと大きな水槽を調べてみる", target: "final_fish", points: { fish: 5 } }
     ]
 },
 
 { label: "final_hikari", name: "佳紀", text: "「なあ、光。明日、水換えするんやけど、手ぇ貸してくれやん？」", next: "ending_check" },
-{ label: "final_hikaru", name: "佳紀", text: "「もうちょっとだけ見とるか。」", next: "ending_check" },
+{ label: "final_hikaru", name: "佳紀", text: "「ヒカル、ちょっとだけ一緒に見やん？」", next: "ending_check" },
 { label: "final_fish", name: "佳紀", text: "「もっと大きい水槽、あったりするんかな。」", next: "ending_check" },
 
 { label: "ending_check", type: "logic" }
@@ -466,11 +467,18 @@ startButton.addEventListener('click', () => {
 
 msgBox.addEventListener('click', () => {
     if (choiceContainer.style.display === 'flex') return;
-    
+
     const current = scenario[currentIndex];
     if (current.type === 'choice') return;
 
-    currentIndex++;
+    if (current.next) {
+        currentIndex = scenario.findIndex(
+            s => s.label === current.next
+        );
+    } else {
+        currentIndex++;
+    }
+
     if (currentIndex < scenario.length) {
         renderStep();
     }
@@ -515,26 +523,8 @@ function renderStep() {
         // bgLayer.style.backgroundImage = `url(${current.bg}.jpg)`; // 画像がある場合はこちら
     }
 
-    // 自動遷移
-    if (current.next) {
-        const nextLabel = current.next;
-        // 次のラベルを探す
-        msgBox.onclick = () => {
-            currentIndex = scenario.findIndex(s => s.label === nextLabel);
-            renderStep();
-            // イベントリスナを元に戻す
-            resetMsgBoxClick();
-        };
-    }
-}
 
-function resetMsgBoxClick() {
-    msgBox.onclick = () => {
-        if (choiceContainer.style.display === 'flex') return;
-        currentIndex++;
-        renderStep();
-    };
-}
+
 
 function showChoices(choices) {
     choiceContainer.innerHTML = '';
@@ -562,13 +552,13 @@ function showChoices(choices) {
 function determineEnding() {
     // 優先順位：金魚沼 > 三人 > 光 = ヒカル
     if (state.fish >= 6) {
-        showEnding("金魚沼エンド：増え続ける水槽", "数日後――。座敷には、見覚えのない巨大な水槽が鎮座していた。『この水草もええな……』『次は流木も入れたい……』目を輝かせる佳紀の後ろで、光とヒカルが並んで座っている。『……おれら、最近ほとんど話しかけられてへん』『金魚に負けた……』デメとダルマだけが、今日も悠々と泳いでいた。");
+        showEnding("金魚沼エンド：増え続ける水槽", "数日後――。座敷には、見覚えのない巨大な水槽が鎮座していた。『この水草もええな……』『次は流木も入れたい……』目を輝かせる佳紀の後ろで、光とヒカルが並んで座っている。『……おれら、最近ほとんど話しかけられてへん』『金魚に負けた……』金魚二匹だけが、今日も悠々と泳いでいた。");
     } else if (state.trio >= 3) {
-        showEnding("三人エンド：おれらの方も見て", "『最近、よしき金魚ばっか見とる』『見とるな』二人にじりじりと迫られて、佳紀は眉をひそめた。『……何なん』。光がにやりと笑う。『今日は、おれらでよしきの世話したる』。ヒカルも嬉しそうに頷いた。『うん！』そのまま両側から抱きつかれ、座敷は大騒ぎになる。金魚鉢の中では、デメとダルマが、何も知らない顔でゆらゆらと泳いでいた。");
+        showEnding("三人エンド：おれらの方も見て", "『最近、よしき金魚ばっか見とる』『見とるな』二人にじりじりと迫られて、佳紀は眉をひそめた。『……何なん』。光がにやりと笑う。『今日は、おれらでよしきの世話したる』。ヒカルも嬉しそうに頷いた。『ええよな♡』そのまま両側から抱きつかれ、佳紀はベッドへ担がれていく。金魚は何も知らない顔でゆらゆらと泳いでいた。");
     } else if (state.hikari >= state.hikaru) {
-        showEnding("光エンド：水面越しの体温", "翌朝――。佳紀と光は、並んで金魚鉢の水を換えていた。『そっち持っとって』『分かっとる』。そんなやり取りをしながら、ふと触れた指先を、光はなかなか離さなかった。『……金魚、大事にしろよ。お前が大事にしとるもんは、おれも……それなりに、大事やと思っとるから』。朝の光の中、そう言った光の耳は、少し赤かった。");
+        showEnding("光エンド：水面越しの体温", "翌朝――。佳紀と光は、並んで金魚鉢の水を換えていた。『そっち持っとって』『分かっとる』。そんなやり取りをしながら、ふと触れた指先を、光はなかなか離さなかった。『お前が大事にしとるもんは、おれも……それなりに、大事やと思っとるから』。朝の光の中、そう言った光の耳は、少し赤かった。");
     } else {
-        showEnding("ヒカルエンド：一番だいじなもの", "夜更け。金魚鉢を覗き込んでいたヒカルが、ふいに佳紀を振り返った。『なあ、よしき。金魚さんは大事にされとるやろ？ ……おれも、大事にできとる？』真っ直ぐな瞳に、佳紀は少しだけ困った顔で笑う。『当たり前やろ』。そう言って頭を撫でると、ヒカルはとても嬉しそうに目を細めた。");
+        showEnding("ヒカルエンド：一番だいじなもの", "夜更け。金魚鉢を覗き込んでいたヒカルが、ふいに佳紀を振り返った。『なあ、よしき。……おれも、よしきのこと、大事にできとる？』真っ直ぐな瞳に、佳紀は少しだけ困った顔で笑う。『当たり前やん』。そう言って頭を撫でると、ヒカルはとても嬉しそうに目を細めた。");
     }
 
 }
